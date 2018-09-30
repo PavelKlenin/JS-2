@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Coffe Machine</title>
+</head>
+
+<body>
+    <h2>Количество кофе, г</h2>
+    <input id="beans" type="text">
+    <span class="error" id="beansError"></span>
+    <h2>Количество воды, мл</h2>
+    <input id="water" type="text">
+    <span class="error" id="waterError"></span>
+    <h2 id="time">Время приготовления: </h2>
+    <button id="start">Запуск</button>
+    <button id="stop">Стоп</button>
+
+    <script>
+        for (i = 0; i < document.getElementsByClassName('error').length; i++) {
+            document.getElementsByClassName('error')[i].style.color = 'red';
+        }
+
+        function CoffeeMachine(power) {
+            const waterHeatCapacity = 4200;
+            const maxTemp = 90;
+            let waterAmount = 0;
+            //ввести значение зерен
+            let beansAmount = 0;
+
+            this.mill = function(beans) {
+                if (beans >= 7) {
+                    beansAmount = beans
+                    document.getElementById('beansError').innerHTML = '';
+                } else {
+                    beansAmount = 0;
+                    console.error('Слишком мало зерен!');
+                    document.getElementById('beansError').innerHTML = 'Недостаточно зёрен!';
+                }
+            }
+
+            this.fill = function(newAmount) {
+                if (newAmount >= 50) {
+                    waterAmount = newAmount;
+                    document.getElementById('waterError').innerHTML = '';
+                } else {
+                    waterAmount = 0;
+                    document.getElementById('waterError').innerHTML = 'Недостаточно воды!';
+                    console.error('Слишком мало воды!');
+                }
+            }
+
+            //* время приготовления зависит от кол-ва зерен
+            const getMillTime = function() {
+                return (Math.floor(beansAmount / 7) * 2000); // 1 порция за 2 сек
+            }
+
+            const getBoilTime = function() {
+                return (waterAmount * waterHeatCapacity * maxTemp) / power;
+            }
+
+            this.launch = function() {
+                const millTime = getMillTime();
+                const boilTime = getBoilTime();
+                if (millTime == 0 || boilTime == 0) {
+                    console.error('Кофемашина пустая'); //проверка на пустую кофеварку
+                } else {
+                    document.getElementById('time').innerHTML = `Время приготовления: ${(millTime + boilTime)/1000} c`;
+                    console.info(`Время помола: ${millTime/1000} с`);
+                    console.info(`Время ожидания: ${boilTime/1000} с`);
+                    let cooking = setTimeout(function() {
+                        document.getElementById('time').innerHTML = `Ваш кофе готов!`;
+                        console.log('Ваш кофе готов!');
+                    }, (millTime + boilTime));
+                    //реализовать кнопку стоп
+                    document.getElementById("stop").onclick = function() {
+                        clearTimeout(cooking);
+                        console.log('Остановлено');
+                        document.getElementById('time').innerHTML = `Приготовление остановлено`;
+                    }
+                }
+            }
+        }
+
+        var vitek = new CoffeeMachine(3000);
+
+        inputBeans = document.getElementById("beans");
+        inputBeans.onchange = function() {
+            vitek.mill(inputBeans.value);
+        }
+
+        inputWater = document.getElementById("water");
+        inputWater.onchange = function() {
+            vitek.fill(inputWater.value);
+        }
+
+        document.getElementById("start").onclick = vitek.launch;
+
+    </script>
+</body>
+
+</html>
