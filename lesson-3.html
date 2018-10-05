@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>RegExp</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="container">
+        <p class="text m-3">'Lorem ipsum dolor sit amet', consectetur adipisicing elit. Totam officiis, 'tem'pore' - expedita quibusdam 'repudiandae' reprehenderit autem quos neque:'fuga earum', animi nemo. Totam, recusandae blanditiis! Voluptates culp'a, facere dolorem ipsum?
+        </p>
+        <hr>
+        <form>
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" class="form-control input" id="name" placeholder="Enter name">
+                <small class="errorMessage" class="form-text text-muted">Неправильный ввод. Имя содержит только буквы.</small>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="text" class="form-control input" id="phone" placeholder="Enter phone">
+                <small class="errorMessage" class="form-text text-muted">Неправильный ввод. Пример: +7(123)456-7890.</small>
+            </div>
+            <div class="form-group">
+                <label for="email">Email address</label>
+                <input type="text" class="form-control input" id="mail" placeholder="Enter email">
+                <small class="errorMessage" class="form-text text-muted">Неправильный ввод. Пример: my-mail@mail.ru.</small>
+            </div>
+            <div class="form-group">
+                <textarea class="form-control" placeholder="Enter message"></textarea>
+            </div>
+            <button type="submit " class="btn btn-primary submit">Submit</button>
+        </form>
+    </div>
+</body>
+
+
+<script>
+    'use strict';
+    // задание 1 и 2
+    let str = document.getElementsByClassName('text')[0].innerHTML;
+    console.log(str);
+    const pattern = /\B'|'\B/gi;
+    document.getElementsByClassName('text')[0].innerHTML = str.replace(pattern, '"');
+
+
+    // задание 3
+    const errorMessage = document.getElementsByClassName('errorMessage');
+    for (let i = 0; i < errorMessage.length; i++) {
+        errorMessage[i].style.color = 'red';
+        errorMessage[i].style.visibility = 'hidden';
+    }
+
+    const namePattern = /^[a-zа-я]+(\s[a-zа-я]+)?$/i;
+    const phonePattern = /\+\d\(\d{3}\)\d{3}-\d{4}/;
+    const mailPattern = /^[^\s^@]+@[a-z]+\.(ru|com|org)/;
+    let arrPattern = [namePattern, phonePattern, mailPattern];
+
+    const submit = document.getElementsByClassName('submit')[0];
+    const inputForm = document.getElementsByClassName('input');
+
+    submit.addEventListener('click', (event) => {
+        event.preventDefault();
+        for (let i = 0; i < inputForm.length; i++) {
+            if (!(arrPattern[i].test(inputForm[i].value))) {
+                inputForm[i].style.borderColor = 'red';
+                errorMessage[i].style.visibility = 'visible';
+            } else {
+                inputForm[i].style.borderColor = '#ced4da';
+                errorMessage[i].style.visibility = 'hidden';
+            }
+        }
+    });
+
+</script>
+
+</html>
