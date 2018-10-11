@@ -1,0 +1,38 @@
+.user-list {
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+p {
+    margin: 0;
+}
+
+.user-list > .user-list-item {
+    border-radius: 0.25rem 0.25rem 0 0;
+    margin-bottom: -1px;
+}
+
+.user-list-item:hover {
+    background-color: #efefef;
+}
+
+.user-list-item:active p {
+    transform: scale(0.95);
+}
+
+.active-list {
+    font-weight: bold;
+    border-bottom: none;
+}
+
+.content {
+    padding: 10px;
+    border: 1px solid rgba(0, 0, 0, .125);
+    display: none;
+}
+
+.active-content {
+    display: block;
+}

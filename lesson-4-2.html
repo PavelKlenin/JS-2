@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>City Form</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <style>
+        .error-border {
+            border: 1px solid red;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <form class="mt-4 w-50 form-position">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" class="form-control input" id="name" placeholder="Enter name">
+                <small class="errorMessage invisible" class="form-text text-muted">Неправильный ввод. Имя содержит только буквы.</small>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="text" class="form-control input" id="phone" placeholder="Enter phone">
+                <small class="errorMessage invisible" class="form-text text-muted">Неправильный ввод. Пример: +7(123)456-7890.</small>
+            </div>
+            <div class="form-group">
+                <label for="email">Email address</label>
+                <input type="text" class="form-control input" id="mail" placeholder="Enter email">
+                <small class="errorMessage invisible" class="form-text text-muted">Неправильный ввод. Пример: my-mail@mail.ru.</small>
+            </div>
+            <div class="form-group">
+                <label for="city">City</label>
+                <select required name="City" class="form-control city-select" id="city">
+                </select>
+            </div>
+            <div class="form-group">
+                <textarea class="form-control" placeholder="Enter message"></textarea>
+            </div>
+            <button type="submit " class="btn btn-primary submit">Submit</button>
+        </form>
+    </div>
+</body>
+
+
+<script>
+    'use strict';
+    const errorMessage = $('.errorMessage');
+    errorMessage.each((i, el) => {
+        $(el).css('color', 'red');
+    });
+
+    const namePattern = /^[a-zа-я]+(\s[a-zа-я]+)?$/i;
+    const phonePattern = /\+\d\(\d{3}\)\d{3}-\d{4}/;
+    const mailPattern = /^[^\s^@]+@[a-z]+\.(ru|com|org)/;
+    let arrPattern = [namePattern, phonePattern, mailPattern];
+
+    const submit = $('.submit:first');
+    const inputForm = $('.input');
+
+    submit.on('click', (event) => {
+        event.preventDefault();
+        inputForm.each((i, el) => {
+            if (!(arrPattern[i].test(el.value))) {
+                $(el).addClass('error-border');
+                if ($(errorMessage[i]).is('.invisible')) {
+                    $(errorMessage[i]).toggleClass('invisible visible');
+                }
+            } else {
+                $(el).removeClass('error-border');
+                if ($(errorMessage[i]).is('.visible')) {
+                    $(errorMessage[i]).toggleClass('invisible visible');
+                }
+            }
+        });
+    });
+    const citySelect = $('.city-select');
+
+    $.ajax({
+        url: 'http://89.108.65.123/cities',
+        dataType: 'json',
+        success: (data) => {
+            $(data).each((i, el) => {
+                citySelect.append($('<option>', {
+                    value: el.name,
+                    text: el.name,
+                }));
+            });
+        },
+        error: (error) => {
+            console.log(error);
+        },
+    });
+
+</script>
+
+</html>
