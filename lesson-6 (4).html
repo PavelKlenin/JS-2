@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Comments</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <style>
+        .likes-counter {
+            cursor: pointer;
+        }
+
+        .likes-counter:hover {
+            background-color: #0069d9;
+        }
+
+        .comment {
+            cursor: pointer;
+        }
+
+        .display-none {
+            display: none !important;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="slider mt-4"></div>
+        <form class="mt-4">
+            <div class="form-group">
+                <label for="exampleFormControlTextarea1">Comment</label>
+                <textarea class="form-control comment-text" id="exampleFormControlTextarea1" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary post-btn">Submit</button>
+        </form>
+        <ul class="list-group mt-4"></ul>
+        <ul class="list-group mt-4">
+            <li class="list-group-item d-flex justify-content-between align-items-center basket">
+                <span class="flex-grow-1">Basket</span>
+                <span class="badge badge-primary badge-pill mx-3 basket-counter">0</span>
+                <button type="submit" class="btn btn-primary return-btn mx-3">Return</button>
+                <button type="submit" class="btn btn-primary clean-btn">Clean</button>
+            </li>
+        </ul>
+    </div>
+</body>
+
+<script>
+    'use strict';
+
+    function Comments() {
+        const C_URL = 'http://89.108.65.123:8080/comments';
+
+        this.method = {
+            GET: 'GET',
+            POST: 'POST',
+            PATCH: 'PATCH',
+            DELETE: 'DELETE',
+        }
+
+        this.request = async function(url = '', method = 'GET') {
+            try {
+                return await fetch(`${C_URL}${url}`, {
+                    method: method,
+                }).then(response => {
+                    return response.json();
+                }).catch(error => {
+                    console.error(error);
+                });
+            } catch (err) {
+                return false;
+            }
+        }
+    }
+
+    const httpComments = new Comments();
+
+    /* ФУНКЦИИ ДЕЙСТВИЙ С СООБЩЕНИЯМИ*/
+    const getComments = async () => {
+        const comments = await httpComments.request();
+        console.log(comments);
+        init(comments);
+    }
+    const postComments = async (text) => {
+        await httpComments.request(`?text=${text}`, httpComments.method.POST);
+        getComments();
+    }
+    const clickLike = async (comment_id) => {
+        await httpComments.request(`?comment_id=${comment_id}`, httpComments.method.PATCH);
+        getComments();
+    }
+    const deleteComment = async (comment_id) => {
+        await httpComments.request(`?comment_id=${comment_id}`, httpComments.method.DELETE);
+        getComments();
+    }
+    /* функции действий с сообщениями */
+
+    const list = document.querySelector('.list-group');
+
+    const init = (items) => {
+
+        /* ОБНОВЛЕНИЕ СПИСКА */
+        list.innerHTML = '';
+        items.forEach(item => {
+            list.innerHTML += `<li class="list-group-item d-flex align-items-center comment" id=${item.comment_id}>
+                <span class="flex-grow-1" >${item.text}</span>
+                <span class="badge badge-primary badge-pill mx-3 likes-counter">${item.likes}</span>`;
+        });
+        $('.comment').draggable({
+            axis: 'y',
+            revert: true,
+        });
+
+        /* обновление списка */
+
+        /* КНОПКА LIKE */
+        const likesCounter = document.querySelectorAll('.likes-counter');
+        likesCounter.forEach(item => {
+            item.addEventListener('click', event => {
+                event.preventDefault();
+                clickLike(item.parentElement.getAttribute('id'));
+            })
+        });
+        /* кнопка like */
+    }
+
+    /* КОРЗИНА */
+    const basket = $('.basket');
+    let basketCounter = $('.basket-counter');
+    let basketList = [];
+    basket.droppable({
+        drop: function(event, ui) {
+            ui.draggable.addClass('display-none');
+            basketList.push(ui.draggable[0]);
+            basketCounter[0].innerHTML = basketList.length;
+        }
+    });
+
+    const cleanBtn = document.querySelector('.clean-btn');
+    cleanBtn.addEventListener('click', event => {
+        event.preventDefault();
+        for (var i = 0; i < basketList.length; i++) {
+            deleteComment(basketList[i].id);
+        }
+
+        basketList = [];
+        basketCounter[0].innerHTML = 0;
+    });
+
+    const returnComment = document.querySelector('.return-btn');
+    returnComment.addEventListener('click', event => {
+        event.preventDefault();
+        for (var i = 0; i < basketList.length; i++) {
+            basketList[i].classList.remove('display-none');
+        }
+        basketList = [];
+        basketCounter[0].innerHTML = 0;
+    })
+    /* корзина */
+
+    /* КНОПКА SUBMIT */
+    const postBtn = document.querySelector('.post-btn');
+    const commentText = document.querySelector('.comment-text');
+
+    postBtn.addEventListener('click', event => {
+        event.preventDefault();
+        postComments(commentText.value);
+        commentText.value = '';
+    });
+    /* кнопка submit */
+
+    document.addEventListener('DOMContentLoaded', getComments);
+
+</script>
+
+</html>
