@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>jQuery UI</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <style>
+        .error-border {
+            border: 1px solid red;
+        }
+
+        .form-position {
+            position: relative;
+        }
+
+        .city-list {
+            margin-top: -1rem;
+            display: none;
+            padding-left: 0;
+            position: absolute;
+        }
+
+        .city-list-display {
+            display: block;
+        }
+
+        .input-city {
+            text-transform: capitalize;
+        }
+
+        .city-list-item {
+            cursor: pointer;
+        }
+
+        .list-on-focus {
+            background-color: #80bdff;
+        }
+
+        .list-on-active {
+            background-color: #0069d9;
+        }
+
+        .no-close .ui-dialog-titlebar-close {
+            display: none;
+        }
+
+        .ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset {
+            float: none;
+            text-align: center;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <form class="mt-4 w-50 form-position">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" class="form-control input" id="name" placeholder="Enter name">
+                <small class="errorMessage invisible" class="form-text text-muted">Неправильный ввод. Имя содержит только буквы.</small>
+            </div>
+            <div class="form-group">
+                <label for="date">Birthday</label>
+                <input type="date" class="form-control input" id="date">
+                <small class="errorMessage invisible" class="form-text text-muted">Неправильный ввод.</small>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="text" class="form-control input" id="phone" placeholder="Enter phone">
+                <small class="errorMessage invisible" class="form-text text-muted">Неправильный ввод. Пример: +7(123)456-7890.</small>
+            </div>
+            <div class="form-group">
+                <label for="email">Email address</label>
+                <input type="text" class="form-control input" id="mail" placeholder="Enter email">
+                <small class="errorMessage invisible" class="form-text text-muted">Неправильный ввод. Пример: my-mail@mail.ru.</small>
+            </div>
+            <div class="form-group">
+                <label for="city-new">City</label>
+                <input type="text" class="form-control input-city" id="city-new" placeholder="Enter city">
+            </div>
+            <ul class="form-group city-list"></ul>
+            <div class="form-group">
+                <textarea class="form-control" placeholder="Enter message"></textarea>
+            </div>
+            <button type="submit " class="btn btn-primary submit">Submit</button>
+        </form>
+        <div id="dialog" title="Errors">
+            <p>Содержимое окна.</p>
+        </div>
+    </div>
+</body>
+
+
+<script>
+    'use strict';
+
+    const errorDialog = $("#dialog");
+    errorDialog.dialog({
+        autoOpen: false,
+        modal: true,
+        dialogClass: 'no-close',
+        width: 450,
+        buttons: {
+            OK: function() {
+                $(this).dialog('close');
+            }
+        }
+    });
+
+    const errorMessage = $('.errorMessage');
+    errorMessage.each((i, el) => {
+        $(el).css('color', 'red');
+    });
+
+    const namePattern = /^[a-zа-я]+(\s[a-zа-я]+)?$/i;
+    const datePattern = /./;
+    const phonePattern = /\+\d\(\d{3}\)\d{3}-\d{4}/;
+    const mailPattern = /^[^\s^@]+@[a-z]+\.(ru|com|org)/;
+    let arrPattern = [namePattern, datePattern, phonePattern, mailPattern];
+
+    const submit = $('.submit:first');
+    const inputForm = $('.input');
+
+    submit.on('click', (event) => {
+        event.preventDefault();
+        errorDialog['0'].innerHTML = '';
+        inputForm.each((i, el) => {
+            if (!el.value) {
+                $(el).effect('bounce');
+                $(el).addClass('error-border');
+                if ($(errorMessage[i]).is('.invisible')) {
+                    $(errorMessage[i]).toggleClass('invisible visible');
+                }
+                errorDialog['0'].innerHTML += `<p>Поле '${el.id}' : не заполнено.</p>`;
+            } else if (!(arrPattern[i].test(el.value))) {
+                $(el).effect('bounce');
+                $(el).addClass('error-border');
+                if ($(errorMessage[i]).is('.invisible')) {
+                    $(errorMessage[i]).toggleClass('invisible visible');
+                }
+                errorDialog['0'].innerHTML += `<p>Поле '${el.id}' : ${errorMessage[i].innerHTML}</p>`;
+            } else {
+                $(el).removeClass('error-border');
+                if ($(errorMessage[i]).is('.visible')) {
+                    $(errorMessage[i]).toggleClass('invisible visible');
+                }
+            }
+            if (errorDialog['0'].innerHTML) {
+                errorDialog.dialog('open');
+            }
+        });
+    });
+
+    const cityList = $('.city-list');
+    const inputCity = $('.input-city');
+
+    inputCity.on('input', () => {
+        if (inputCity.val().length >= 3) {
+            cityList.empty(); // Обнуление
+            cityList.removeClass('form-control'); // списка
+            cityList.addClass('city-list-display'); // перед новой проверкой
+            let newText = inputCity.val()[0].toUpperCase() + inputCity.val().substr(1); // Заглавная буква при вводе
+            $.ajax({
+                url: 'http://89.108.65.123/cities',
+                dataType: 'json',
+                success: (data) => {
+                    $(data).each((i, elem) => {
+                        if (newText == elem.name.substr(0, inputCity.val().length)) {
+                            const newLi = $('<li>').addClass('form-control city-list-item').text(elem.name);
+                            newLi.width(inputCity.outerWidth()); // ширина для элемента с position: absolute
+                            cityList.append(newLi);
+                            newLi.hover(() => { // стили при наведении
+                                newLi.addClass('list-on-focus');
+                            }, () => {
+                                newLi.removeClass('list-on-focus');
+                            });
+                            newLi.mousedown(() => { // стили при нажатии
+                                newLi.addClass('list-on-active');
+                            });
+                            newLi.on('click', () => { // подстановка в форму при выборе
+                                inputCity.val(elem.name);
+                                cityList.empty();
+                                cityList.removeClass('city-list-display');
+                            });
+                        }
+                    });
+
+                    const cityListItem = $('.city-list-item')
+
+                    if (cityListItem.length == 0) {
+                        // cityList.append($('<li>').addClass('form-control city-list-item').text('No matches'));
+                        cityList.addClass('form-control').text('No matches');
+                        // При быстром вводе или при нажатии backspace всё равно
+                        // выпадает это сообщение
+                    }
+                }
+            });
+        } else {
+            cityList.empty(); // обнуление списка при стирании букв
+            cityList.removeClass('city-list-display');
+        }
+    });
+
+</script>
+
+</html>
