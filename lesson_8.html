@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mocha@5.2.0/mocha.css">
+    <script src="https://cdn.jsdelivr.net/npm/mocha@5.2.0/mocha.js"></script>
+    <script>
+        mocha.setup('bdd')
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chai@4.2.0/chai.js"></script>
+    <script>
+        var assert = chai.assert
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <form class="user-form m-3">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" class="form-control" id="name" placeholder="Name">
+            </div>
+            <div class="form-group">
+                <label for="email">Email address</label>
+                <input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email">
+            </div>
+            <div class="form-group">
+                <label for="age">Age</label>
+                <input type="number" class="form-control" id="age" placeholder="Age">
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+        <div class="userList m-3"></div>
+    </div>
+    <div id="mocha"></div>
+</body>
+
+<script>
+    "use strict";
+
+    const container = document.getElementsByClassName('container')[0];
+    container.style.display = 'flex';
+    container.style.justifyContent = 'space-between';
+
+    const getUserList = () => {
+        return fetch('http://89.108.65.123/user')
+            .then(result => {
+                return result.json();
+            })
+            .then((data) => {
+                const userList = document.getElementsByClassName('userList')[0];
+                for (let i = 0; i < data.length; i++) {
+                    addUser(userList, data, i + 1);
+                }
+            })
+            .catch(error => console.log(error));
+    }
+
+    const getUser = () => {
+        return fetch('http://89.108.65.123/user')
+            .then(result => {
+                console.log(result);
+                return result.json();
+            })
+            .then((data) => {
+//                console.log(data);
+//                console.log('ID: ' + data.length);
+                const userList = document.getElementsByClassName('userList')[0];
+                addUser(userList, data, data.length);
+            })
+            .catch(error => console.log(error));
+    }
+
+    const sendUser = (name, email, age) => {
+        return fetch('http://89.108.65.123/user/', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: name,
+                    email: email,
+                    age: age
+                })
+            })
+            .then(result => {
+                if (result.status == 200) {
+                    getUser();
+                }
+            })
+            .catch(error => console.error(error));
+    }
+
+    const addUser = (parentDiv, data, id) => {
+        let user = document.createElement('a');
+        user.style.display = 'block';
+        user.style.textDecoration = 'none';
+        parentDiv.appendChild(user);
+        user.innerHTML = 'id-' + id + ' ' + JSON.stringify(data[id - 1]);
+        user.setAttribute('href', 'http://89.108.65.123/user/' + id);
+    }
+
+    const initForm = () => {
+        const userForm = document.querySelector('.user-form');
+        const userName = document.querySelector('#name');
+        const userEmail = document.querySelector('#email');
+        const userAge = document.querySelector('#age');
+        getUserList();
+        userForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            sendUser(userName.value, userEmail.value, userAge.value);
+            return;
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', initForm);
+
+</script>
+<script src="test.js"></script>
+<script>
+    mocha.run()
+</script>
+
+</html>
